@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CivNodes Map</title>
+
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <meta property="og:title" content="CivNodes Map" />
+  <meta property="og:description" content="Interactive live map for play.civnodes.net" />
+  <meta property="og:image" content="https://civ-nodes-map.com/images/og_image.png" />
+  <meta property="og:type" content="website" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="CivNodes Map" />
+  <meta name="twitter:description" content="Interactive live map for play.civnodes.net" />
+  <meta name="twitter:image" content="https://civ-nodes-map.com/images/og_image.png" />
+
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <div id="sidebar">
+      <h1>&#9635; CIVNODES MAP</h1>
+
+      <div class="section">
+        <label>Server</label>
+        <div style="font-size:13px;color:var(--accent-2);">play.civnodes.net</div>
+      </div>
+
+      <div class="section">
+        <label>Community Links</label>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <a href="https://civnodes.com/" target="_blank" rel="noopener noreferrer" class="link-btn">Website</a>
+          <a href="https://discord.gg/civnodes" target="_blank" rel="noopener noreferrer" class="link-btn">Discord</a>
+        </div>
+      </div>
+
+      <div class="section">
+        <label>Jump to coordinate</label>
+        <div class="row">
+          <input id="jumpX" class="small-input" placeholder="X" inputmode="decimal">
+          <input id="jumpZ" class="small-input" placeholder="Z" inputmode="decimal">
+          <button id="jumpBtn">Go</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <label>Claims Overlay</label>
+        <div class="row">
+          <input type="checkbox" id="toggleClaims" style="width:auto;">
+          <label for="toggleClaims" style="margin:0;text-transform:none;letter-spacing:normal;">Show claims overlay</label>
+        </div>
+        <div class="slider-row" style="margin-top:8px;">
+          <label for="claimsOpacity" style="margin:0;text-transform:none;letter-spacing:normal;font-size:11px;color:var(--text-dim);">Opacity:</label>
+          <input type="range" id="claimsOpacity" min="0" max="1" step="0.05" value="0.7" style="flex:1;">
+          <span id="claimsOpacityVal" style="font-size:11px;min-width:32px;text-align:right;">70%</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Last updated: Sep 1, 2026</div>
+      </div>
+
+      <div class="section">
+        <label>Nodes Overlay</label>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <label for="nodeFileInput" class="file-btn">Choose JSON File</label>
+          <input type="file" id="nodeFileInput" accept=".json" style="display:none;">
+          <button id="toggleInfoBtn" type="button" class="info-icon" title="Toggle scraper help">?</button>
+        </div>
+        <div id="nodeFileStatus">No file loaded</div>
+        <div id="infoBox" class="info-box">
+          Use <a href="ingame_node_scraper.js" download style="color:var(--accent);text-decoration:underline;font-weight:bold;">ingame_node_scraper.js</a> in-game with JSMacros to scrape nodes, then load the generated JSON file here.
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <input type="checkbox" id="toggleNodes" style="width:auto;">
+          <label for="toggleNodes" style="margin:0;text-transform:none;letter-spacing:normal;">Show nodes overlay</label>
+        </div>
+        <div class="slider-row" style="margin-top:8px;">
+          <label for="nodesOpacity" style="margin:0;text-transform:none;letter-spacing:normal;font-size:11px;color:var(--text-dim);">Opacity:</label>
+          <input type="range" id="nodesOpacity" min="0" max="1" step="0.05" value="1" style="flex:1;">
+          <span id="nodesOpacityVal" style="font-size:11px;min-width:32px;text-align:right;">100%</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <label>Snitch Overlay</label>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <label for="snitchFileInput" class="file-btn">Choose DB File</label>
+          <input type="file" id="snitchFileInput" accept=".sqlite,.db,.sqlite3,.json" style="display:none;">
+          <button id="toggleSnitchInfoBtn" type="button" class="info-icon" title="Toggle SnitchMod help">?</button>
+        </div>
+        <div id="snitchFileStatus">No database loaded</div>
+        <div id="snitchInfoBox" class="info-box">
+          Download the mod from <a href="https://modrinth.com/mod/snitch-mod" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;font-weight:bold;">Modrinth</a> and look for your database file in <code>minecraft/SnitchMod/play.civnodes.com/</code>.
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <input type="checkbox" id="toggleSnitches" style="width:auto;">
+          <label for="toggleSnitches" style="margin:0;text-transform:none;letter-spacing:normal;">Show snitch overlay</label>
+        </div>
+        <div class="slider-row" style="margin-top:8px;">
+          <label for="snitchesOpacity" style="margin:0;text-transform:none;letter-spacing:normal;font-size:11px;color:var(--text-dim);">Opacity:</label>
+          <input type="range" id="snitchesOpacity" min="0" max="1" step="0.05" value="0.8" style="flex:1;">
+          <span id="snitchesOpacityVal" style="font-size:11px;min-width:32px;text-align:right;">80%</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="sidebarBackdrop"></div>
+
+    <div id="sidebarToggleBar">
+      <button id="sidebarToggle" title="Toggle sidebar">&lsaquo;</button>
+    </div>
+
+    <div id="mapWrap">
+      <canvas id="mapCanvas"></canvas>
+      <div id="tooltip"></div>
+      <div id="legend"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
